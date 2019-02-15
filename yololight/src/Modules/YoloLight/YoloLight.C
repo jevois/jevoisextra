@@ -30,8 +30,8 @@ extern "C" {
 // Missing from additionally.h:
 list *read_data_cfg(char *filename);
 void free_network(network net);
-char *option_find_str(list *l, char *key, char *def);
-int option_find_int(list *l, char *key, int def);
+char *option_find_str(list *l, char const *key, char const *def);
+int option_find_int(list *l, char const *key, int def);
 }
 
 // icon by yolo creators
@@ -86,19 +86,18 @@ JEVOIS_DECLARE_PARAMETER(letterbox, bool, "Letterbox the input frame instead of 
     scene in one pass. This module detects all instances of any of the objects it knows about (determined by the
     network structure, labels, dataset used for training, and weights obtained) in the image that is given to it.
 
-    See https://pjreddie.com/darknet/yolo/
+    See https://github.com/AlexeyAB/yolo2_light and  https://pjreddie.com/darknet/yolo/
 
-    This module runs a YOLO network and shows all detections obtained. The YOLO network is currently quite slow, hence
-    it is only run once in a while. Point your camera towards some interesting scene, keep it stable, and wait for YOLO
-    to tell you what it found.  The framerate figures shown at the bottom left of the display reflect the speed at which
-    each new video frame from the camera is processed, but in this module this just amounts to converting the image to
-    RGB, sending it to the neural network for processing in a separate thread, and creating the demo display. Actual
-    network inference speed (time taken to compute the predictions on one image) is shown at the bottom right. See
-    below for how to trade-off speed and accuracy.
+    This module runs a YOLO network with quantized INT8 inference and shows all detections obtained. The YOLO network is
+    currently quite slow, hence it is only run once in a while. Point your camera towards some interesting scene, keep
+    it stable, and wait for YOLO to tell you what it found.  The framerate figures shown at the bottom left of the
+    display reflect the speed at which each new video frame from the camera is processed, but in this module this just
+    amounts to converting the image to RGB, sending it to the neural network for processing in a separate thread, and
+    creating the demo display. Actual network inference speed (time taken to compute the predictions on one image) is
+    shown at the bottom right. See below for how to trade-off speed and accuracy.
 
     Note that by default this module runs tiny-YOLO V3 which can detect and recognize 80 different kinds of objects from
-    the Microsoft COCO dataset. This module can also run tiny-YOLO V2 for COCO, or tiny-YOLO V2 for the Pascal-VOC
-    dataset with 20 object categories. See the module's \b params.cfg file to switch network.
+    the Microsoft COCO dataset.
 
     - The 80 COCO object categories are: person, bicycle, car, motorbike, aeroplane, bus, train, truck, boat, traffic,
       fire, stop, parking, bench, bird, cat, dog, horse, sheep, cow, elephant, bear, zebra, giraffe, backpack, umbrella,
@@ -107,34 +106,25 @@ JEVOIS_DECLARE_PARAMETER(letterbox, bool, "Letterbox the input frame instead of 
       cake, chair, sofa, pottedplant, bed, diningtable, toilet, tvmonitor, laptop, mouse, remote, keyboard, cell,
       microwave, oven, toaster, sink, refrigerator, book, clock, vase, scissors, teddy, hair, toothbrush.
 
-    - The 20 Pascal-VOC object categories are: aeroplane, bicycle, bird, boat, bottle, bus, car, cat, chair, cow,
-      diningtable, dog, horse, motorbike, person, pottedplant, sheep, sofa, train, tvmonitor.
-
     Sometimes it will make mistakes! The performance of yolov3-tiny is about 33.1% correct (mean average precision) on
     the COCO test set.
 
     \youtube{d5CfljT5kec}
 
-    Speed and network size
-    ----------------------
+    Speed
+    -----
 
-    The parameter \p netin allows you to rescale the neural network to the specified size. Beware that this will only
-    work if the network used is fully convolutional (as is the case of the default tiny-yolo network). This not only
-    allows you to adjust processing speed (and, conversely, accuracy), but also to better match the network to the input
-    images (e.g., the default size for tiny-yolo is 416x416, and, thus, passing it a input image of size 640x480 will
-    result in first scaling that input to 416x312, then letterboxing it by adding gray borders on top and bottom so that
-    the final input to the network is 416x416). This letterboxing can be completely avoided by just resizing the network
-    to 320x240.
+    Despite the promise of faster speed using quantized INT8 inference as opposed to float inference, this version of
+    YOLO runs about twice slower than the original \jvmod{DarknetYOLO} or the OpenCV port in \jvmod{DetectionDNN} or
+    \jvmod{PyDetectionDNN}. In addition, there is no mechanism in yolo2_light for resizing the network, so we are stuck
+    with using the default size of 416x416.
 
-    Here are expected processing speeds for yolov2-tiny-voc:
-    - when netin = [0 0], processes letterboxed 416x416 inputs, about 2450ms/image
-    - when netin = [320 240], processes 320x240 inputs, about 1350ms/image
-    - when netin = [160 120], processes 160x120 inputs, about 695ms/image
+    Here are expected processing speeds for yolov3-tiny (COCO):
+    -  416x416 inputs, INT8 quantized inference, about 5300ms/image
+    -  416x416 inputs, float inference, about 9500ms/image
 
-    YOLO V3 is faster, more accurate, uses less memory, and can detect 80 COCO categories:
-    - when netin = [320 240], processes 320x240 inputs, about 870ms/image
-
-    \youtube{77VRwFtIe8I}
+    note however that this network seems to be performing better than the other YOLO modules, so maybe there is an
+    accuracy benefit in using this slower implementation.
 
     Serial messages
     ---------------
@@ -153,8 +143,8 @@ JEVOIS_DECLARE_PARAMETER(letterbox, bool, "Letterbox the input frame instead of 
     @author Laurent Itti
 
     @displayname YOLO Light
-    @videomapping NONE 0 0 0.0 YUYV 640 480 0.4 JeVois YoloLight
-    @videomapping YUYV 1280 480 15.0 YUYV 640 480 15.0 JeVois YoloLight
+    @videomapping NONE 0 0 12.0 YUYV 640 480 12.0 JeVois YoloLight
+    @videomapping YUYV 1280 480 12.0 YUYV 640 480 12.0 JeVois YoloLight
     @email itti\@usc.edu
     @address University of Southern California, HNB-07A, 3641 Watt Way, Los Angeles, CA 90089-2520, USA
     @copyright Copyright (C) 2019 by Laurent Itti, iLab and the University of Southern California
@@ -306,7 +296,7 @@ class YoloLight : public jevois::StdModule,
     // ####################################################################################################
     //! Compute the boxes
     /*! You must have called predict() first for this to not violently crash. */
-    void computeBoxes(int inw, int inh)
+    void computeBoxes()
     {
       layer & l = net.layers[net.n-1];
       if (dets) { free_detections(dets, nboxes); dets = nullptr; nboxes = 0; }
@@ -435,7 +425,7 @@ class YoloLight : public jevois::StdModule,
         LINFO("Predicted in " << ptime << "ms");
 
         // Compute the boxes:
-        computeBoxes(w, h);
+        computeBoxes();
 
         // Send serial results:
         sendSerial(this, w, h);
@@ -545,12 +535,12 @@ class YoloLight : public jevois::StdModule,
           cvimg.release();
           
           // Launch the predictions:
-          itsPredictFut = std::async(std::launch::async, [&](int ww, int hh)
+          itsPredictFut = std::async(std::launch::async, [&]()
                                      {
                                        float pt = predict(itsNetInput);
-                                       computeBoxes(ww, hh);
+                                       computeBoxes();
                                        return pt;
-                                     }, w, h);
+                                     });
         }
         
         // Wait for paste to finish up:

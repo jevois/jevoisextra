@@ -1,3 +1,32 @@
+diff --git a/src/additionally.c b/src/additionally.c
+index ecbf88f..1a5a049 100644
+--- a/src/additionally.c
++++ b/src/additionally.c
+@@ -3277,7 +3277,7 @@ char *option_find(list *l, char *key)
+ }
+ 
+ // option_list.c
+-char *option_find_str(list *l, char *key, char *def)
++char *option_find_str(list *l, char const *key, char const *def)
+ {
+     char *v = option_find(l, key);
+     if (v) return v;
+@@ -3286,7 +3286,7 @@ char *option_find_str(list *l, char *key, char *def)
+ }
+ 
+ // option_list.c
+-int option_find_int(list *l, char *key, int def)
++int option_find_int(list *l, char const *key, int def)
+ {
+     char *v = option_find(l, key);
+     if (v) return atoi(v);
+@@ -4914,4 +4914,4 @@ void validate_calibrate_valid(char *datacfg, char *cfgfile, char *weightfile, in
+             network_calibrate_cpu(net, X);
+         }
+     }
+-}
+\ No newline at end of file
++}
 diff --git a/src/yolov2_forward_network.c b/src/yolov2_forward_network.c
 index 39b2887..234abbd 100644
 --- a/src/yolov2_forward_network.c
