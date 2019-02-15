@@ -1,0 +1,62 @@
+diff --git a/src/yolov2_forward_network.c b/src/yolov2_forward_network.c
+index 39b2887..234abbd 100644
+--- a/src/yolov2_forward_network.c
++++ b/src/yolov2_forward_network.c
+@@ -619,7 +619,7 @@ void yolov2_forward_network_cpu(network net, network_state state)
+             //printf("\n REGION \n");
+         }
+         else {
+-            printf("\n layer: %d \n", l.type);
++          // printf("\n layer: %d \n", l.type);
+         }
+ 
+ 
+@@ -818,7 +818,7 @@ float *network_calibrate_cpu(network net, float *input)
+             //printf("\n REGION \n");
+         }
+         else {
+-            printf("\n layer: %d \n", l.type);
++          //printf("\n layer: %d \n", l.type);
+         }
+ 
+ 
+diff --git a/src/yolov2_forward_network_quantized.c b/src/yolov2_forward_network_quantized.c
+index 5035505..b58ba18 100644
+--- a/src/yolov2_forward_network_quantized.c
++++ b/src/yolov2_forward_network_quantized.c
+@@ -1036,7 +1036,7 @@ void yolov2_forward_network_q(network net, network_state state)
+             if (i >= 1 && l.activation != LINEAR) forward_convolutional_layer_q(l, state);
+             else forward_convolutional_layer_cpu(l, state);
+ 
+-            printf("\n %d - CONVOLUTIONAL \t\t l.size = %d  \n", i, l.size);
++            //printf("\n %d - CONVOLUTIONAL \t\t l.size = %d  \n", i, l.size);
+         }
+         else if (l.type == MAXPOOL) {
+             forward_maxpool_layer_cpu(l, state);
+@@ -1067,7 +1067,7 @@ void yolov2_forward_network_q(network net, network_state state)
+             //printf("\n REGION \n");
+         }
+         else {
+-            printf("\n layer: %d \n", l.type);
++          //printf("\n layer: %d \n", l.type);
+         }
+ 
+ 
+@@ -1103,7 +1103,7 @@ void yolov2_forward_network_q_old(network net, network_state state)
+             if (i >= 1 && l.activation != LINEAR) forward_convolutional_layer_q_old(l, state, return_float);
+             else forward_convolutional_layer_cpu(l, state);
+ 
+-            printf("\n %d - CONVOLUTIONAL \t\t l.size = %d  \n", i, l.size);
++            //printf("\n %d - CONVOLUTIONAL \t\t l.size = %d  \n", i, l.size);
+         }
+         else if (l.type == MAXPOOL) {
+             forward_maxpool_layer_q(l, state);
+@@ -1136,7 +1136,7 @@ void yolov2_forward_network_q_old(network net, network_state state)
+             //printf("\n REGION \n");
+         }
+         else {
+-            printf("\n layer: %d \n", l.type);
++          //printf("\n layer: %d \n", l.type);
+         }
+ 
+ 
