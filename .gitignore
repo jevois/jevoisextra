@@ -1,0 +1,9 @@
+.installed
+hbuild
+pbuild
+jvpkg
+*.jvpkg
+modinfo.html
+dlib
+libdmtx
+pylibdmtx
