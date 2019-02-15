@@ -31,7 +31,7 @@ include(jevois_config)
 include(JeVois)
 
 ## Set project name, detects compiler (which has been set by our helper module). Then set some complation flags:
-project(yololight)
+project(yololight CXX C)
 jevois_project_set_flags()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 

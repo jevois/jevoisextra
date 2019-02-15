@@ -22,6 +22,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <atomic>
 
+extern "C" {
 #include <box.h>
 #include <pthread.h>
 #include <additionally.h>
@@ -31,6 +32,7 @@ list *read_data_cfg(char *filename);
 void free_network(network net);
 char *option_find_str(list *l, char *key, char *def);
 int option_find_int(list *l, char *key, int def);
+}
 
 // icon by yolo creators
 
@@ -71,11 +73,6 @@ JEVOIS_DECLARE_PARAMETER(hierthresh, float, "Hierarchical detection threshold in
                          50.0F, jevois::Range<float>(0.0F, 100.0F), ParamCateg);
 
 //! Parameter \relates YoloLight
-JEVOIS_DECLARE_PARAMETER(netin, cv::Size, "Width and height (in pixels) of the neural network input layer, or [0 0] "
-                         "to make it match camera frame size. NOTE: for YOLO v3 sizes must be multiples of 32.",
-                         cv::Size(320, 224), ParamCateg);
-
-//! Parameter \relates YoloLight
 JEVOIS_DECLARE_PARAMETER(quantized, bool, "Use INT8 quantized inference (faster but slightly less accurate)",
                          true, ParamCateg);
 
@@ -84,7 +81,7 @@ JEVOIS_DECLARE_PARAMETER(letterbox, bool, "Letterbox the input frame instead of 
                          false, ParamCateg);
 
 
-//! Detect multiple objects in scenes using the Darknet YOLO deep neural network
+//! Detect multiple objects in scenes using the quantized YOLO Light deep neural network
 /*! Darknet is a popular neural network framework, and YOLO is a very interesting network that detects all objects in a
     scene in one pass. This module detects all instances of any of the objects it knows about (determined by the
     network structure, labels, dataset used for training, and weights obtained) in the image that is given to it.
@@ -155,7 +152,7 @@ JEVOIS_DECLARE_PARAMETER(letterbox, bool, "Letterbox the input frame instead of 
 
     @author Laurent Itti
 
-    @displayname Darknet YOLO
+    @displayname YOLO Light
     @videomapping NONE 0 0 0.0 YUYV 640 480 0.4 JeVois YoloLight
     @videomapping YUYV 1280 480 15.0 YUYV 640 480 15.0 JeVois YoloLight
     @email itti\@usc.edu
@@ -170,7 +167,7 @@ JEVOIS_DECLARE_PARAMETER(letterbox, bool, "Letterbox the input frame instead of 
     \ingroup modules */
 class YoloLight : public jevois::StdModule,
                   jevois::Parameter<dataroot, datacfg, cfgfile, weightfile, namefile, nms, thresh,
-                                    hierthresh, netin, quantized, letterbox>
+                                    hierthresh, quantized, letterbox>
 {
   public: 
     // ####################################################################################################
@@ -314,7 +311,7 @@ class YoloLight : public jevois::StdModule,
       layer & l = net.layers[net.n-1];
       if (dets) { free_detections(dets, nboxes); dets = nullptr; nboxes = 0; }
       int const letter = letterbox::get() ? 1 : 0;
-      dets = get_network_boxes(&net, inw /* was 1*/, inh /* was 1*/, thresh::get() * 0.01F, hierthresh::get() * 0.01F, map, 0, &nboxes, letter);
+      dets = get_network_boxes(&net, 1, 1, thresh::get() * 0.01F, hierthresh::get() * 0.01F, map, 0, &nboxes, letter);
       float const nmsval = nms::get() * 0.01F;
       if (nmsval) do_nms_sort(dets, nboxes, l.classes, nmsval);
     }
@@ -402,18 +399,6 @@ class YoloLight : public jevois::StdModule,
     }
     
     // ####################################################################################################
-    //! Resize the network's input image dims
-    /*! This will prepare the network to receive inputs of the specified size. It is optional and will be called
-        automatically by predict() if the given image size does not match the current network input size. Note that this
-        only works with fully convolutional networks. Note that the number of channels cannot be changed at this
-        time. Throws std::logic_error if the network is still loading and not ready. */
-    void resizeInDims(int w, int h)
-    {
-      if (itsReady.load() == false) throw std::logic_error("not ready yet...");
-      /////// not supported??? resize_network(net, w, h);
-    }
-    
-    // ####################################################################################################
     //! Get input width, height, channels
     /*! Throws std::logic_error if the network is still loading and not ready. */
     void getInDims(int & w, int & h, int & c) const
@@ -435,19 +420,8 @@ class YoloLight : public jevois::StdModule,
       // Convert input image to RGB for predictions:
       cv::Mat cvimg = jevois::rawimage::convertToCvRGB(inimg);
 
-      // Resize the network and/or the input if desired:
-      cv::Size nsz = netin::get();
-      if (nsz.width != 0 && nsz.height != 0)
-      {
-        resizeInDims(nsz.width, nsz.height);
-        itsNetInput = jevois::rescaleCv(cvimg, nsz);
-      }
-      else
-      {
-        resizeInDims(cvimg.cols, cvimg.rows);
-        itsNetInput = cvimg;
-      }
-
+      // Resize the input to match network size:
+      itsNetInput = jevois::rescaleCv(cvimg, cv::Size(net.w, net.h));
       cvimg.release();
       
       // Let camera know we are done processing the input image:
@@ -491,7 +465,7 @@ class YoloLight : public jevois::StdModule,
 
           // Paste the current input image:
           jevois::rawimage::paste(inimg, outimg, 0, 0);
-          jevois::rawimage::writeText(outimg, "JeVois Darknet YOLO - input", 3, 3, jevois::yuyv::White);
+          jevois::rawimage::writeText(outimg, "JeVois YOLO Light - input", 3, 3, jevois::yuyv::White);
 
           // Paste the latest prediction results, if any, otherwise a wait message:
           cv::Mat outimgcv = jevois::rawimage::cvImage(outimg);
@@ -500,7 +474,7 @@ class YoloLight : public jevois::StdModule,
           else
           {
             jevois::rawimage::drawFilledRect(outimg, w, 0, w, h, jevois::yuyv::Black);
-            jevois::rawimage::writeText(outimg, "JeVois Darknet YOLO - loading network - please wait...",
+            jevois::rawimage::writeText(outimg, "JeVois YOLO Light - loading network - please wait...",
                                         w + 3, 3, jevois::yuyv::White);
           }
         });
@@ -538,7 +512,7 @@ class YoloLight : public jevois::StdModule,
             sendSerial(this, w, h);
             
             // Draw some text messages:
-            jevois::rawimage::writeText(outimg, "JeVois Darknet YOLO - predictions", w + 3, 3, jevois::yuyv::White);
+            jevois::rawimage::writeText(outimg, "JeVois YOLO Light - predictions", w + 3, 3, jevois::yuyv::White);
             jevois::rawimage::writeText(outimg, "YOLO predict time: " + std::to_string(int(ptime)) + "ms",
                                         w + 3, h - 13, jevois::yuyv::White);
             
@@ -556,8 +530,8 @@ class YoloLight : public jevois::StdModule,
       }
       else
       {
-        // Note: resizeInDims() could throw if the network is not ready yet.
-        try
+        // If the network is still loading, silently skip; otherwise launch the processing:
+        if (itsReady.load())
         {
           // Convert input image to RGB for predictions:
           cv::Mat cvimg = jevois::rawimage::convertToCvRGB(inimg);
@@ -566,19 +540,8 @@ class YoloLight : public jevois::StdModule,
           cv::Mat inimgcv = jevois::rawimage::cvImage(inimg);
           inimgcv.copyTo(itsRawInputCv);
           
-          // Resize the network if desired:
-          cv::Size nsz = netin::get();
-          if (nsz.width != 0 && nsz.height != 0)
-          {
-            resizeInDims(nsz.width, nsz.height);
-            itsNetInput = jevois::rescaleCv(cvimg, nsz);
-          }
-          else
-          {
-            resizeInDims(cvimg.cols, cvimg.rows);
-            itsNetInput = cvimg;
-          }
-          
+          // Resize the input to match network size:
+          itsNetInput = jevois::rescaleCv(cvimg, cv::Size(net.w, net.h));
           cvimg.release();
           
           // Launch the predictions:
@@ -589,7 +552,6 @@ class YoloLight : public jevois::StdModule,
                                        return pt;
                                      }, w, h);
         }
-        catch (std::logic_error const & e) { }
         
         // Wait for paste to finish up:
         paste_fut.get();
