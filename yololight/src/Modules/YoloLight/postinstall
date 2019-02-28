@@ -5,7 +5,7 @@
 # The caller script will set the current directory to the location of this script before launching the script.
 
 # Add our video mappings to the main mappings file:
-jevois-add-videomapping YUYV 1280 480 14.0 YUYV 640 480 14.0 JeVois YoloLight
+jevois-add-videomapping YUYV 1280 480 12.0 YUYV 640 480 12.0 JeVois YoloLight
 
 # Example of a simple message:
 echo "YoloLight is now installed"
