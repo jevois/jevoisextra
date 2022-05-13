@@ -1,7 +1,7 @@
 #!/bin/bash
 # Download and extract dlib:
 
-ver=19.20
+ver=19.24
 
 if [ -d dlib ]; then
     echo "dlib/ directory already present! Delete it if you want to reinstall -- SKIPPING DLIB DOWNLOAD"

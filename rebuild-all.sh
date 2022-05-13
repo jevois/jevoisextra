@@ -6,6 +6,8 @@ for d in `find . -type d`; do
         cd "$d"
         ./rebuild-host.sh
         ./rebuild-platform.sh --staging
+        ./rebuild-pro-host.sh
+        ./rebuild-pro-platform-pdeb.sh
         cd ..
     fi
 done
