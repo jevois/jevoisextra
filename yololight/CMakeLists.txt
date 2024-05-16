@@ -19,11 +19,15 @@
 ## You may provide the installed JeVois config root as:
 #   cmake -DJEVOIS_CONFIG=/jevois/config ..
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.6)
 
 ## Set vendor names, our modules will be placed in a directory by that name under /jevois/modules:
 set(JEVOIS_VENDOR "JeVois")
-set(JEVOIS_CONFIG "/jevois/config" CACHE STRING "Path to JeVois config to use")
+if (JEVOIS_HARDWARE STREQUAL "PRO")
+  set(JEVOIS_CONFIG "/jevoispro/config" CACHE STRING "Path to JeVois config to use")
+else()
+  set(JEVOIS_CONFIG "/jevois/config" CACHE STRING "Path to JeVois config to use")
+endif()
 
 ## Include helper functions, config, etc from the JeVois install:
 set(CMAKE_MODULE_PATH ${JEVOIS_CONFIG})
@@ -39,12 +43,15 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 jevois_setup_modules(src/Modules "")
 
 ## Add any link libraries for each module:
-target_link_libraries(YoloLight ${JEVOIS_OPENCV_LIBS} opencv_imgproc opencv_core)
+target_link_libraries(YoloLight ${JEVOIS_OPENCV_LIBS})
 
 ## AlexeyAB's yolo2 light with support for INT8 and XNOR:
 add_definitions(-DOPENMP)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
+
+set(NOWARN "-Wno-deprecated-enum-enum-conversion -Wno-unused-result -Wno-incompatible-pointer-types -Wno-implicit-function-declaration -Wno-discarded-qualifiers")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp ${NOWARN}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp ${NOWARN}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fopenmp -lgomp")
 
 set(Y2L "${CMAKE_CURRENT_SOURCE_DIR}/../Contrib/yolo2_light/src")

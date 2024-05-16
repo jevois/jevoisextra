@@ -19,11 +19,16 @@
 ## You may provide the installed JeVois config root as:
 #   cmake -DJEVOIS_CONFIG=/jevois/config ..
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.6)
 
 ## Set vendor names, our modules will be placed in a directory by that name under /jevois/modules:
+# Set vendor name, our modules will be placed in a directory by that name under /jevois/modules:
 set(JEVOIS_VENDOR "JeVois")
-set(JEVOIS_CONFIG "/jevois/config" CACHE STRING "Path to JeVois config to use")
+if (JEVOIS_HARDWARE STREQUAL "PRO")
+  set(JEVOIS_CONFIG "/jevoispro/config" CACHE STRING "Path to JeVois config to use")
+else()
+  set(JEVOIS_CONFIG "/jevois/config" CACHE STRING "Path to JeVois config to use")
+endif()
 
 ## Include helper functions, config, etc from the JeVois install:
 set(CMAKE_MODULE_PATH ${JEVOIS_CONFIG})
@@ -48,7 +53,7 @@ include_directories("dlib")
 target_sources(FaceDetector PRIVATE dlib/dlib/all/source.cpp)
 
 ## Add any link libraries for our module:
-target_link_libraries(FaceDetector ${JEVOIS_OPENCV_LIBS} opencv_imgproc opencv_core)
+target_link_libraries(FaceDetector ${JEVOIS_OPENCV_LIBS})
 
 ## Install any shared resources (cascade classifiers, neural network weights, etc) in the share/ sub-directory:
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/share"
