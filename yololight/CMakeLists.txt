@@ -62,6 +62,3 @@ target_sources(YoloLight PRIVATE ${Y2L}/yolov2_forward_network.c ${Y2L}/yolov2_f
 ## Install any shared resources (cascade classifiers, neural network weights, etc) in the share/ sub-directory:
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/share"
   DESTINATION "${JEVOIS_INSTALL_ROOT}" COMPONENT bin)
-
-## Wrapping up:
-jevois_project_finalize()  # call this last in your CMakeLists.txt, will un-mount the live microSD if applicable

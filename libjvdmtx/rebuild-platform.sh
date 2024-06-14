@@ -1,7 +1,5 @@
 #!/bin/bash
-# USAGE: rebuild-platform.sh [--jvpkg] [cmake opts]
-#
-# If --jvpkg is specified, then a jevois .jvpkg package will also be created
+# USAGE: rebuild-platform.sh [cmake opts]
 
 set -e
 
@@ -17,4 +15,4 @@ make -j
 sudo make install
 cd ..
 
-if [ $create_jvpkg = "yes" ]; then jevois-jvpkg `cat pbuild/jvpkg-args`; fi
+jevois-jvpkg `cat pbuild/jvpkg-args`

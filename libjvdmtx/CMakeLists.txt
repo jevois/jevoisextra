@@ -94,8 +94,3 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "${JEVOIS_DEPEND}")
 
 # Use helper from JeVois.cmake for all other settings:
 jevois_setup_cpack("jevois-libjvdmtx")
-
-
-########################################################################################################################
-# Wrapping up:
-jevois_project_finalize()  # call this last in your CMakeLists.txt, will un-mount the live microSD if applicable
