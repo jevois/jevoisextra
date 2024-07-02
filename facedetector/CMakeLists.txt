@@ -56,5 +56,4 @@ target_sources(FaceDetector PRIVATE dlib/dlib/all/source.cpp)
 target_link_libraries(FaceDetector ${JEVOIS_OPENCV_LIBS})
 
 ## Install any shared resources (cascade classifiers, neural network weights, etc) in the share/ sub-directory:
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/share"
-  DESTINATION "${JEVOIS_INSTALL_ROOT}" COMPONENT bin)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/share" DESTINATION "${JEVOIS_MODULES_ROOT}" COMPONENT bin)
