@@ -3,9 +3,6 @@
 
 set -e
 
-create_jvpkg="no"
-if [ "X$1" = "X--jvpkg" ]; then create_jvpkg="yes"; shift; fi
-
 # Let's build it:
 sudo /bin/rm -rf pbuild
 mkdir pbuild
