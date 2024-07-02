@@ -60,4 +60,4 @@ target_sources(YoloLight PRIVATE ${Y2L}/yolov2_forward_network.c ${Y2L}/yolov2_f
   ${Y2L}/box.c ${Y2L}/additionally.c)
 
 ## Install any shared resources (cascade classifiers, neural network weights, etc) in the share/ sub-directory:
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/share" DESTINATION "${JEVOIS_MODULES_ROOT}" COMPONENT bin)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/share" DESTINATION "${JEVOIS_MODULES_ROOT}/share" COMPONENT bin)
