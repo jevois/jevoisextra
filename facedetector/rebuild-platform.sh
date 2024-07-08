@@ -9,7 +9,7 @@ if [ ! -d dlib ]; then ./download-dlib.sh; fi
 sudo /bin/rm -rf pbuild
 mkdir pbuild
 cd pbuild
-cmake "${extra} $@" -DJEVOIS_PLATFORM=ON ..
+cmake "$@" -DJEVOIS_PLATFORM=ON ..
 make -j
 sudo make install
 cd ..
